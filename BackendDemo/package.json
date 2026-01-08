@@ -1,0 +1,24 @@
+{
+  "name": "firebase-todo-mvp",
+  "version": "1.0.0",
+  "description": "Firebase-based To-Do List MVP with multi-provider authentication",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 8080 -o",
+    "deploy": "firebase deploy",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:hosting": "firebase deploy --only hosting"
+  },
+  "keywords": [
+    "firebase",
+    "todo",
+    "authentication",
+    "firestore",
+    "realtime"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

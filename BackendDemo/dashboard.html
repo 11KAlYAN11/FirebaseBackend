@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Firebase To-Do List Dashboard - Manage your tasks efficiently">
+    <title>Dashboard - Firebase To-Do List</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <div class="logo-icon">✓</div>
+                        <span class="logo-text">TaskFlow</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <!-- Theme Toggle -->
+                    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+
+                    <!-- User Menu -->
+                    <div class="user-menu">
+                        <img id="user-avatar" class="user-avatar"
+                            src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="User Avatar">
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="dropdown-item" id="user-profile">
+                                <span>👤</span>
+                                <span id="user-name">User</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" id="logout-btn">
+                                <span>🚪</span>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Welcome Section -->
+            <section class="dashboard-welcome">
+                <h1 class="welcome-title">Welcome back, <span id="welcome-name">User</span>!</h1>
+                <p class="welcome-subtitle">Here's what you have on your plate today</p>
+            </section>
+
+            <!-- Stats Grid -->
+            <section class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Tasks</span>
+                        <div class="stat-icon primary">📋</div>
+                    </div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Pending</span>
+                        <div class="stat-icon warning">⏳</div>
+                    </div>
+                    <div class="stat-value" id="stat-pending">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">Completed</span>
+                        <div class="stat-icon success">✓</div>
+                    </div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-label">High Priority</span>
+                        <div class="stat-icon error">🔥</div>
+                    </div>
+                    <div class="stat-value" id="stat-high-priority">0</div>
+                </div>
+            </section>
+
+            <!-- Todo Section -->
+            <section class="todo-section">
+                <div class="section-header">
+                    <h2 class="section-title">Your Tasks</h2>
+                    <div class="section-actions">
+                        <!-- Search -->
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" id="search-input" placeholder="Search tasks...">
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="filter-group">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="pending">Pending</button>
+                            <button class="filter-btn" data-filter="completed">Completed</button>
+                        </div>
+
+                        <!-- Add Todo Button -->
+                        <button class="btn btn-primary" id="add-todo-btn">
+                            <span>➕</span>
+                            <span>Add Task</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Todo List -->
+                <div id="todo-list" class="todo-list">
+                    <!-- Todos will be rendered here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state hidden">
+                    <div class="empty-icon">📝</div>
+                    <h3 class="empty-title">No tasks yet</h3>
+                    <p class="empty-description">Create your first task to get started!</p>
+                    <button class="btn btn-primary" id="empty-add-btn">
+                        <span>➕</span>
+                        <span>Create Task</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add/Edit Todo Modal -->
+    <div class="modal-overlay" id="todo-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add New Task</h3>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="todo-form">
+                    <input type="hidden" id="todo-id" name="id">
+
+                    <div class="form-group">
+                        <label for="todo-title" class="form-label">Title *</label>
+                        <input type="text" id="todo-title" name="title" class="form-input"
+                            placeholder="What needs to be done?" required maxlength="200">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="todo-description" class="form-label">Description</label>
+                        <textarea id="todo-description" name="description" class="form-textarea"
+                            placeholder="Add more details..." maxlength="1000"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="todo-priority" class="form-label">Priority</label>
+                        <select id="todo-priority" name="priority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="todo-due-date" class="form-label">Due Date</label>
+                        <input type="datetime-local" id="todo-due-date" name="dueDate" class="form-input">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-save">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="js/dashboard.js"></script>
+</body>
+
+</html>

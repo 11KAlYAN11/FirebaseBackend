@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+    
+    function isValidUser(user) {
+      return user.keys().hasAll(['uid', 'name', 'email', 'provider', 'createdAt', 'updatedAt'])
+        && user.uid is string
+        && user.name is string
+        && user.email is string
+        && user.provider is string
+        && user.createdAt is timestamp
+        && user.updatedAt is timestamp;
+    }
+    
+    function isValidTodo(todo) {
+      return todo.keys().hasAll(['title', 'status', 'ownerUID', 'createdAt', 'updatedAt'])
+        && todo.title is string
+        && todo.title.size() > 0
+        && todo.title.size() <= 200
+        && todo.status in ['pending', 'completed']
+        && todo.ownerUID is string
+        && todo.createdAt is timestamp
+        && todo.updatedAt is timestamp
+        && (!('description' in todo) || (todo.description is string && todo.description.size() <= 1000))
+        && (!('priority' in todo) || todo.priority in ['low', 'medium', 'high'])
+        && (!('dueDate' in todo) || todo.dueDate is timestamp);
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Users can create their own profile (on signup)
+      allow create: if isAuthenticated() 
+        && isOwner(userId) 
+        && isOwner(request.resource.data.uid)
+        && isValidUser(request.resource.data);
+      
+      // Users can update their own profile
+      allow update: if isAuthenticated() 
+        && isOwner(userId)
+        && isOwner(request.resource.data.uid)
+        && isValidUser(request.resource.data)
+        // Prevent changing UID
+        && request.resource.data.uid == resource.data.uid;
+      
+      // Users cannot delete their profile (optional: allow if needed)
+      allow delete: if false;
+    }
+    
+    // Todos collection rules
+    match /todos/{todoId} {
+      // Users can read their own todos
+      allow read: if isAuthenticated() && isOwner(resource.data.ownerUID);
+      
+      // Users can create todos (must be owner)
+      allow create: if isAuthenticated() 
+        && isOwner(request.resource.data.ownerUID)
+        && isValidTodo(request.resource.data);
+      
+      // Users can update their own todos
+      allow update: if isAuthenticated() 
+        && isOwner(resource.data.ownerUID)
+        && isOwner(request.resource.data.ownerUID)
+        && isValidTodo(request.resource.data)
+        // Prevent changing owner
+        && request.resource.data.ownerUID == resource.data.ownerUID;
+      
+      // Users can delete their own todos
+      allow delete: if isAuthenticated() && isOwner(resource.data.ownerUID);
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
