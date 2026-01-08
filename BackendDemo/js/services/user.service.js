@@ -1,7 +1,7 @@
 // User Service
 // Handles user data operations in Firestore
 
-import { db } from '../utils/firebase.init.js';
+import { db, firebase } from '../utils/firebase.init.js';
 
 export const UserService = {
     /**

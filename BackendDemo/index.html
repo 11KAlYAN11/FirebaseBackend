@@ -213,6 +213,13 @@
   </div>
 
   <!-- JavaScript -->
+  <!-- Ensure Firebase is loaded before initializing auth module -->
+  <script>
+    // Wait for Firebase to be loaded
+    if (typeof firebase === 'undefined') {
+      console.error('Firebase SDK not loaded. Please check script tags in the head.');
+    }
+  </script>
   <script type="module" src="js/auth.js"></script>
 </body>
 </html>

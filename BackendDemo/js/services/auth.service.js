@@ -1,7 +1,7 @@
 // Authentication Service
 // Handles all Firebase Authentication operations
 
-import { auth, db } from '../utils/firebase.init.js';
+import { auth, db, firebase } from '../utils/firebase.init.js';
 import { UserService } from './user.service.js';
 
 export const AuthService = {
@@ -264,15 +264,30 @@ export const AuthService = {
             'auth/user-not-found': 'No account found with this email',
             'auth/wrong-password': 'Incorrect password',
             'auth/too-many-requests': 'Too many failed attempts. Please try again later',
-            'auth/network-request-failed': 'Network error. Please check your connection',
+            'auth/network-request-failed': 'Network error. Please check your internet connection',
             'auth/popup-closed-by-user': 'Sign-in popup was closed',
             'auth/cancelled-popup-request': 'Only one popup request is allowed at a time',
             'auth/popup-blocked': 'Sign-in popup was blocked by the browser',
             'auth/account-exists-with-different-credential': 'An account already exists with the same email but different sign-in credentials',
-            'auth/requires-recent-login': 'This operation requires recent authentication. Please log in again'
+            'auth/requires-recent-login': 'This operation requires recent authentication. Please log in again',
+            'auth/configuration-not-found': 'Email/Password authentication is not enabled in Firebase Console. Please enable it in Firebase Console → Authentication → Sign-in method → Email/Password',
+            'auth/invalid-api-key': 'Invalid Firebase API key. Please check your Firebase configuration',
+            'auth/app-not-authorized': 'Firebase app is not authorized. Please check your Firebase configuration'
         };
 
-        const message = errorMessages[error.code] || error.message || 'An error occurred during authentication';
+        let message = errorMessages[error.code];
+        
+        // If no specific message, use the error message or a generic one
+        if (!message) {
+            message = error.message || 'An error occurred during authentication';
+            
+            // Log the full error for debugging
+            console.error('Authentication error:', {
+                code: error.code,
+                message: error.message,
+                error: error
+            });
+        }
 
         return new Error(message);
     }

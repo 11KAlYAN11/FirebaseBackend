@@ -1,7 +1,7 @@
 // Todo Service
 // Handles all to-do CRUD operations with Firestore
 
-import { db } from '../utils/firebase.init.js';
+import { db, firebase } from '../utils/firebase.init.js';
 import { Validators } from '../utils/validators.js';
 
 export const TodoService = {
