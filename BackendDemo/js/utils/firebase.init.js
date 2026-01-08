@@ -1,7 +1,7 @@
 // Firebase Initialization
 // This module initializes Firebase and exports the app instance
 
-import { firebaseConfig } from './config/firebase.config.js';
+import { firebaseConfig } from '../config/firebase.config.js';
 
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
