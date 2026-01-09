@@ -85,7 +85,24 @@ class DashboardController {
         // Modal
         document.getElementById('modal-close').addEventListener('click', () => this.closeTodoModal());
         document.getElementById('modal-cancel').addEventListener('click', () => this.closeTodoModal());
-        document.getElementById('modal-save').addEventListener('click', () => this.saveTodo());
+        
+        // Prevent form submission and handle save
+        const todoForm = document.getElementById('todo-form');
+        if (todoForm) {
+            todoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.saveTodo();
+                return false;
+            });
+        }
+        
+        document.getElementById('modal-save').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.saveTodo();
+            return false;
+        });
 
         // Close modal on overlay click
         document.getElementById('todo-modal').addEventListener('click', (e) => {
@@ -267,11 +284,13 @@ class DashboardController {
             delete saveBtn.dataset.originalText;
         }
         
-        // Ensure modal styles are reset when opening
+        // Ensure modal styles are completely reset when opening
         if (modal) {
+            modal.style.display = '';
             modal.style.visibility = '';
             modal.style.opacity = '';
             modal.style.pointerEvents = '';
+            modal.style.zIndex = '';
         }
 
         if (todo) {
@@ -386,29 +405,8 @@ class DashboardController {
                 UIUtils.showSuccess('Task created successfully!');
             }
 
-            // Success! Reset everything and close modal
-            // Reset button state first
-            UIUtils.setButtonLoading(saveBtn, false);
-            
-            // Reset form
-            form.reset();
-            this.editingTodoId = null;
-            
-            // Close modal immediately - remove active class
-            if (modal) {
-                modal.classList.remove('active');
-                // Force close by also setting visibility (backup)
-                modal.style.visibility = 'hidden';
-                modal.style.opacity = '0';
-                modal.style.pointerEvents = 'none';
-                
-                // Reset inline styles after transition completes
-                setTimeout(() => {
-                    modal.style.visibility = '';
-                    modal.style.opacity = '';
-                    modal.style.pointerEvents = '';
-                }, 250);
-            }
+            // Success! Just use the existing closeTodoModal function that works
+            this.closeTodoModal();
             
         } catch (error) {
             console.error('Error saving todo:', error);

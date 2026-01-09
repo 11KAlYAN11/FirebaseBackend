@@ -365,8 +365,7 @@ BackendDemo/
     ├── dashboard.js      # Dashboard controller
     │
     ├── config/
-    │   ├── firebase.config.js         # Firebase credentials (gitignored)
-    │   └── firebase.config.example.js # Template
+    │   ├── firebase.config.js         # Firebase credentials (gitignored)│
     │
     ├── services/
     │   ├── auth.service.js   # Authentication operations
@@ -576,6 +575,3 @@ For an MVP and small-to-medium applications, this architecture is ideal. For ent
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2026-01-08  
-**Author**: Firebase To-Do Team
