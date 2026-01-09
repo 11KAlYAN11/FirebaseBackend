@@ -255,6 +255,24 @@ class DashboardController {
         const modal = document.getElementById('todo-modal');
         const modalTitle = document.getElementById('modal-title');
         const form = document.getElementById('todo-form');
+        const saveBtn = document.getElementById('modal-save');
+
+        // Reset button state when opening modal
+        if (saveBtn) {
+            UIUtils.setButtonLoading(saveBtn, false);
+            saveBtn.textContent = 'Save Task';
+            saveBtn.disabled = false;
+            // Clear any stored button state
+            delete saveBtn.dataset.originalHTML;
+            delete saveBtn.dataset.originalText;
+        }
+        
+        // Ensure modal styles are reset when opening
+        if (modal) {
+            modal.style.visibility = '';
+            modal.style.opacity = '';
+            modal.style.pointerEvents = '';
+        }
 
         if (todo) {
             // Edit mode
@@ -285,9 +303,40 @@ class DashboardController {
 
     closeTodoModal() {
         const modal = document.getElementById('todo-modal');
-        modal.classList.remove('active');
+        
+        // Remove active class to hide modal
+        if (modal) {
+            modal.classList.remove('active');
+            // Force close with inline styles as backup
+            modal.style.visibility = 'hidden';
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            
+            // Reset inline styles after transition
+            setTimeout(() => {
+                modal.style.visibility = '';
+                modal.style.opacity = '';
+                modal.style.pointerEvents = '';
+            }, 250);
+        }
+        
+        // Reset form and state
         this.editingTodoId = null;
-        document.getElementById('todo-form').reset();
+        const form = document.getElementById('todo-form');
+        if (form) {
+            form.reset();
+        }
+        
+        // Reset save button state when closing modal
+        const saveBtn = document.getElementById('modal-save');
+        if (saveBtn) {
+            UIUtils.setButtonLoading(saveBtn, false);
+            saveBtn.textContent = 'Save Task';
+            saveBtn.disabled = false;
+            // Clear any stored button state
+            delete saveBtn.dataset.originalHTML;
+            delete saveBtn.dataset.originalText;
+        }
     }
 
     async saveTodo() {
@@ -309,6 +358,14 @@ class DashboardController {
         }
 
         const saveBtn = document.getElementById('modal-save');
+        const modal = document.getElementById('todo-modal');
+        
+        // Prevent multiple clicks
+        if (saveBtn && saveBtn.disabled) {
+            return;
+        }
+
+        // Set loading state
         UIUtils.setButtonLoading(saveBtn, true, 'Saving...');
 
         try {
@@ -329,11 +386,34 @@ class DashboardController {
                 UIUtils.showSuccess('Task created successfully!');
             }
 
-            this.closeTodoModal();
+            // Success! Reset everything and close modal
+            // Reset button state first
+            UIUtils.setButtonLoading(saveBtn, false);
+            
+            // Reset form
+            form.reset();
+            this.editingTodoId = null;
+            
+            // Close modal immediately - remove active class
+            if (modal) {
+                modal.classList.remove('active');
+                // Force close by also setting visibility (backup)
+                modal.style.visibility = 'hidden';
+                modal.style.opacity = '0';
+                modal.style.pointerEvents = 'none';
+                
+                // Reset inline styles after transition completes
+                setTimeout(() => {
+                    modal.style.visibility = '';
+                    modal.style.opacity = '';
+                    modal.style.pointerEvents = '';
+                }, 250);
+            }
+            
         } catch (error) {
             console.error('Error saving todo:', error);
             UIUtils.showError(error.message);
-        } finally {
+            // Reset button state on error so user can try again
             UIUtils.setButtonLoading(saveBtn, false);
         }
     }

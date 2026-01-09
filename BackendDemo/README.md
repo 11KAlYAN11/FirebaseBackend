@@ -127,7 +127,7 @@ Firestore Security Rules ensure:
      - Create new OAuth App
      - Copy Client ID and Secret to Firebase
 
-3. **Create Firestore Database**
+3. **Create Firestore Database** (optional)
    - Navigate to **Firestore Database**
    - Click "Create database"
    - Start in **Test mode** (we'll add rules later)
@@ -166,7 +166,7 @@ Firestore Security Rules ensure:
    npm install
    ```
 
-### Step 3: Deploy Security Rules
+### Step 3: Deploy Security Rules (Optional)
 
 1. **Install Firebase CLI**
    ```bash
@@ -337,7 +337,7 @@ This is an MVP project. To extend:
 
 MIT License - feel free to use for learning and production
 
-## 👨‍💻 Author
+## 👨‍💻 Author Kalyan Reddy
 
 Built as a demonstration of Firebase BaaS capabilities
 

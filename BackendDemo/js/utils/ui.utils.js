@@ -155,13 +155,30 @@ export const UIUtils = {
      * Disable button with loading state
      */
     setButtonLoading(button, isLoading, loadingText = 'Loading...') {
+        if (!button) return;
+        
         if (isLoading) {
+            // Store original HTML content (not just text) to preserve any icons/formatting
+            if (!button.dataset.originalHTML) {
+                button.dataset.originalHTML = button.innerHTML;
+            }
+            if (!button.dataset.originalText) {
+                button.dataset.originalText = button.textContent.trim();
+            }
             button.disabled = true;
-            button.dataset.originalText = button.textContent;
             button.innerHTML = `<span class="spinner-small"></span> ${loadingText}`;
         } else {
+            // Restore button state
             button.disabled = false;
-            button.textContent = button.dataset.originalText || button.textContent;
+            // Restore original HTML if available, otherwise use original text
+            if (button.dataset.originalHTML) {
+                button.innerHTML = button.dataset.originalHTML;
+            } else if (button.dataset.originalText) {
+                button.textContent = button.dataset.originalText;
+            }
+            // Clear stored data
+            delete button.dataset.originalHTML;
+            delete button.dataset.originalText;
         }
     },
 
