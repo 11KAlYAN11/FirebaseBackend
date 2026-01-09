@@ -1,0 +1,135 @@
+name: Update Repository Metadata
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/update-metadata.yml'
+      - 'repo-metadata.json'
+  schedule:
+    # Run daily at midnight UTC (optional - comment out if not needed)
+    - cron: '0 0 * * *'
+
+jobs:
+  update-metadata:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      metadata: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read metadata from file
+        id: read-metadata
+        run: |
+          if [ -f repo-metadata.json ]; then
+            echo "metadata<<EOF" >> $GITHUB_OUTPUT
+            cat repo-metadata.json >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "Using default metadata"
+            cat > repo-metadata.json << 'EOF'
+          {
+            "description": "A production-ready Firebase To-Do List MVP with multi-provider authentication, real-time sync, and modern UI",
+            "homepage": "https://firebase.google.com/",
+            "topics": [
+              "firebase",
+              "todo-app",
+              "task-app",
+              "task-tracker",
+              "task-management",
+              "task-list",
+              "task-manager",
+              "javascript",
+              "firestore",
+              "authentication",
+              "real-time",
+              "mvp",
+              "web-app",
+              "firebase-hosting",
+              "firebase-auth"
+            ],
+            "has_issues": true,
+            "has_projects": true,
+            "has_wiki": true,
+            "has_downloads": true
+          }
+          EOF
+          fi
+
+      - name: Update repository metadata
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            let metadata;
+            
+            if (fs.existsSync('repo-metadata.json')) {
+              metadata = JSON.parse(fs.readFileSync('repo-metadata.json', 'utf8'));
+            } else {
+              // Default metadata
+              metadata = {
+                description: "A production-ready Firebase To-Do List MVP with multi-provider authentication, real-time sync, and modern UI",
+                homepage: "https://firebase.google.com/",
+                topics: [
+                  "firebase",
+                  "todo-app",
+                  "javascript",
+                  "firestore",
+                  "authentication",
+                  "real-time",
+                  "mvp",
+                  "web-app",
+                  "firebase-hosting",
+                  "firebase-auth"
+                ],
+                has_issues: true,
+                has_projects: true,
+                has_wiki: true,
+                has_downloads: true
+              };
+            }
+            
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+            
+            // Update repository info
+            await github.rest.repos.update({
+              owner: owner,
+              repo: repo,
+              description: metadata.description,
+              homepage: metadata.homepage,
+              has_issues: metadata.has_issues !== undefined ? metadata.has_issues : true,
+              has_projects: metadata.has_projects !== undefined ? metadata.has_projects : true,
+              has_wiki: metadata.has_wiki !== undefined ? metadata.has_wiki : true,
+              has_downloads: metadata.has_downloads !== undefined ? metadata.has_downloads : true
+            });
+            
+            console.log('✅ Repository info updated');
+            
+            // Update topics
+            if (metadata.topics && metadata.topics.length > 0) {
+              await github.rest.repos.replaceAllTopics({
+                owner: owner,
+                repo: repo,
+                names: metadata.topics
+              });
+              
+              console.log('✅ Topics updated:', metadata.topics.join(', '));
+            }
+            
+            console.log('🎉 Repository metadata updated successfully!');
+
+      - name: Summary
+        run: |
+          echo "### ✅ Metadata Update Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Repository metadata has been updated successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Updated at:** $(date)" >> $GITHUB_STEP_SUMMARY
+

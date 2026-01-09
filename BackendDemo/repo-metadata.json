@@ -1,0 +1,24 @@
+{
+  "description": "A production-ready Firebase To-Do List MVP with multi-provider authentication, real-time sync, and modern UI",
+  "homepage": "https://firebase.google.com/",
+  "website": "https://firebase.google.com/",
+  "topics": [
+    "firebase",
+    "todo-app",
+    "javascript",
+    "firestore",
+    "authentication",
+    "real-time",
+    "mvp",
+    "web-app",
+    "firebase-hosting",
+    "firebase-auth",
+    "vanilla-js",
+    "crud-app"
+  ],
+  "has_issues": true,
+  "has_projects": true,
+  "has_wiki": true,
+  "has_downloads": true
+}
+
